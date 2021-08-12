@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements JoystickView.Joys
     @Override
     public void onJoystickMoved(float xPercent, float yPercent, int id)
     {
-        MqttPublish(TOPIC, String.valueOf(xPercent));
+        MqttPublish(TOPIC, String.valueOf(yPercent));
         Log.d("Main method", "X percent: " + xPercent + " Y percent: " + yPercent);
     }
 
@@ -125,7 +125,5 @@ public class MainActivity extends AppCompatActivity implements JoystickView.Joys
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
 }
