@@ -8,8 +8,9 @@ int in1 = 9;
 int in2 = 8;
 
 // Initializing the response obtained from master.
-String response = "";
-
+float response = 0;
+int speed;
+int reverse = 0;
 
 void setup() {
 
@@ -31,75 +32,45 @@ void setup() {
 }
 
 
-
 void receiveEvent() {
   
-  response = "";                // Resets the response.
+  float response = 0;            // Resets the response.
+  String aux;
 
   while (Wire.available()) {    // Recieves the response.
       char b = Wire.read();
-      response += b;
+      aux += b;
   } 
- 
-  Serial.println("Received command.");
+
+  response = aux.toFloat();
+
+  if (response > 0) {
+    speed = map(int(response*100), 0, 100, 1, 255);
+    reverse = 0;
+  } 
+  else {
+    speed = map(int(response*100), -100, 0, 255, 1);
+    reverse = 1;
+  }
 }
 
 
-void directionControl() {           
-	// Set motors to maximum speed.
-	// For PWM maximum possible values are 0 to 255.
-	analogWrite(enA, 255);
+void motorAction(int speed) {           
+	analogWrite(enA, speed);
 
 	// Turn on motor A.
-	digitalWrite(in1, HIGH);
-	digitalWrite(in2, LOW);
-	delay(2000);
+  if (reverse) {
+    digitalWrite(in1, HIGH);
+	  digitalWrite(in2, LOW);
+  }
+  else {
+    digitalWrite(in1, LOW);
+	  digitalWrite(in2, HIGH);
+  }
 	
-	// Now change motor directions.
-	digitalWrite(in1, LOW);
-	digitalWrite(in2, HIGH);
-	delay(2000);
-	
-	// Turn off motors.
-	digitalWrite(in1, LOW);
-	digitalWrite(in2, LOW);
-}
-
-void speedControl() {
-	// Turn on motor A.
-	digitalWrite(in1, LOW);
-	digitalWrite(in2, HIGH);
-	
-	// Accelerate from zero to maximum speed.
-	for (int i = 25; i < 256; i++) {
-		analogWrite(enA, i);
-		delay(50);
-	}
-	
-	// Decelerate from maximum speed to zero.
-	for (int i = 255; i >= 25; --i) {
-		analogWrite(enA, i);
-		delay(50);
-	}
-	
-	// Now turn off motor.
-	digitalWrite(in1, LOW);
-	digitalWrite(in2, LOW);
 }
 
 void loop() {
-
-  delay(50);
-
-  if(response == "speed") {                           // Depending on the command given by master, speed or control directions are activated.
-    Serial.println("Speed control activated.");    
-    speedControl();
-    response = "";
-  } 
-  else if (response == "direction") {
-    Serial.println("Direction control activated.");
-    directionControl();
-    response = "";
-  } 
+  motorAction(speed);
 }
 
